@@ -19,12 +19,16 @@ class SummaryCard extends StatelessWidget {
           children: <Widget>[
             Text(
               number < 10 ? '0$number' : '$number',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
+                color: Theme.of(context).primaryColor,
               ),
             ),
-            Text(title)
+            Text(
+              title,
+              style: const TextStyle(fontStyle: FontStyle.italic),
+            )
           ],
         ),
       ),

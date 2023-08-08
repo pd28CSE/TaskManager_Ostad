@@ -47,93 +47,96 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ScreenBackground(
-        child: Padding(
-          padding: const EdgeInsets.all(30),
-          child: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'Set New Password',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    'Minimum length password 8 character with Latter and Number combination',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            isPasswordHidden = !isPasswordHidden;
-                          });
-                        },
-                        icon: Visibility(
-                          visible: isPasswordHidden,
-                          replacement: const Icon(Icons.remove_red_eye),
-                          child: const Icon(Icons.visibility_off),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(30),
+            child: SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Set New Password',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      'Minimum length password 8 character with Latter and Number combination',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isPasswordHidden = !isPasswordHidden;
+                            });
+                          },
+                          icon: Visibility(
+                            visible: isPasswordHidden,
+                            replacement: const Icon(Icons.remove_red_eye),
+                            child: const Icon(Icons.visibility_off),
+                          ),
                         ),
                       ),
+                      obscureText: isPasswordHidden,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.next,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Enter your Password';
+                        }
+                        return null;
+                      },
                     ),
-                    obscureText: isPasswordHidden,
-                    keyboardType: TextInputType.text,
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      if (value?.isEmpty ?? true) {
-                        return 'Enter your Password';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: confirmPasswordController,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            isConfirmPasswordHidden = !isConfirmPasswordHidden;
-                          });
-                        },
-                        icon: Visibility(
-                          visible: isConfirmPasswordHidden,
-                          replacement: const Icon(Icons.remove_red_eye),
-                          child: const Icon(Icons.visibility_off),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: confirmPasswordController,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isConfirmPasswordHidden =
+                                  !isConfirmPasswordHidden;
+                            });
+                          },
+                          icon: Visibility(
+                            visible: isConfirmPasswordHidden,
+                            replacement: const Icon(Icons.remove_red_eye),
+                            child: const Icon(Icons.visibility_off),
+                          ),
                         ),
                       ),
+                      obscureText: isConfirmPasswordHidden,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.done,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Enter your Confirm Password';
+                        } else if (value!.length < 8) {
+                          return 'Minimum length must be 8 characters long';
+                        } else if (value != passwordController.text) {
+                          return 'Password and Confirm Password is not match';
+                        }
+                        return null;
+                      },
                     ),
-                    obscureText: isConfirmPasswordHidden,
-                    keyboardType: TextInputType.text,
-                    textInputAction: TextInputAction.done,
-                    validator: (value) {
-                      if (value?.isEmpty ?? true) {
-                        return 'Enter your Confirm Password';
-                      } else if (value!.length < 8) {
-                        return 'Minimum length must be 8 characters long';
-                      } else if (value != passwordController.text) {
-                        return 'Password and Confirm Password is not match';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (formKey.currentState!.validate() == true) {
-                        await resetPassword();
-                      }
-                    },
-                    child: const Text('Confirm'),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (formKey.currentState!.validate() == true) {
+                          await resetPassword();
+                        }
+                      },
+                      child: const Text('Confirm'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

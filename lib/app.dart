@@ -18,6 +18,7 @@ class _TaskManagerState extends State<TaskManager> {
       debugShowCheckedModeBanner: false,
       title: 'Task Manager',
       theme: ThemeData(
+        primaryColor: Colors.green,
         primarySwatch: Colors.green,
         brightness: Brightness.light,
         textTheme: const TextTheme(
