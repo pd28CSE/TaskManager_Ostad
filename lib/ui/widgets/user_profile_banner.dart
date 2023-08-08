@@ -35,7 +35,7 @@ class UserProfileBanner extends StatelessWidget {
               child: Row(
                 children: <Widget>[
                   Visibility(
-                    visible: AuthUtility.userModel.data!.photo != '',
+                    visible: AuthUtility.userModel.data!.photo!.isNotEmpty,
                     replacement: const Icon(Icons.person_2_outlined, size: 30),
                     child: CircleAvatar(
                       radius: 20,
