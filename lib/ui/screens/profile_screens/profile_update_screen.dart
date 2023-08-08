@@ -346,6 +346,7 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
       auth.data!.firstName = firstNameController.text;
       auth.data!.lastName = lastNameController.text;
       auth.data!.mobile = phoneNumberController.text;
+      auth.data!.photo = base64Encode(imageBytes);
       await AuthUtility.updateUserInfo(auth.data!);
     } else {
       showToastMessage('Profile Update failed!', Colors.red);
