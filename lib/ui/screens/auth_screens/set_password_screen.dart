@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/network_response.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utilitys/urls.dart';
+import 'package:get/get.dart';
+
+import '../../../controllers/set_password_controller.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
-import 'login_screen.dart';
+import './login_screen.dart';
 
 class SetPasswordScreen extends StatefulWidget {
-  static const String routeName = 'set-password-screen/';
+  static const String routeName = '/set-password-screen';
   final String email;
-  final String otp;
-  const SetPasswordScreen({super.key, required this.email, required this.otp});
+  final String pin;
+  const SetPasswordScreen({super.key, required this.email, required this.pin});
 
   @override
   State<SetPasswordScreen> createState() => _SetPasswordScreenState();
@@ -21,16 +21,16 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
   late GlobalKey<FormState> formKey;
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
-  late bool isLoading;
   late bool isPasswordHidden;
   late bool isConfirmPasswordHidden;
+  final SetPasswordController setPasswordController =
+      Get.find<SetPasswordController>();
 
   @override
   void initState() {
     formKey = GlobalKey<FormState>();
     passwordController = TextEditingController();
     confirmPasswordController = TextEditingController();
-    isLoading = false;
     isPasswordHidden = true;
     isConfirmPasswordHidden = true;
     super.initState();
@@ -83,6 +83,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                           ),
                         ),
                       ),
+                      maxLength: 20,
                       obscureText: isPasswordHidden,
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.next,
@@ -112,6 +113,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                           ),
                         ),
                       ),
+                      maxLength: 20,
                       obscureText: isConfirmPasswordHidden,
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.done,
@@ -127,14 +129,65 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (formKey.currentState!.validate() == true) {
-                          await resetPassword();
-                        }
-                      },
-                      child: const Text('Confirm'),
-                    ),
+                    GetBuilder<SetPasswordController>(
+                        builder: (setPassController) {
+                      return ElevatedButton(
+                        onPressed:
+                            setPassController.passwordResetIsInProgress == true
+                                ? null
+                                : () {
+                                    if (formKey.currentState!.validate() ==
+                                        false) {
+                                      return;
+                                    } else {
+                                      setPassController
+                                          .resetPassword(
+                                        email: widget.email,
+                                        pin: widget.pin,
+                                        password: passwordController.text,
+                                      )
+                                          .then((value) {
+                                        if (value == true) {
+                                          formKey.currentState!.reset();
+                                          getXSnackbar(
+                                            title: 'Success.',
+                                            content:
+                                                'Password reset successful., Now you can login.',
+                                          );
+                                          Get.offAll(() => const LoginScreen());
+                                          // showToastMessage(
+                                          //   'Password reset successful., Now you can login.',
+                                          //   Colors.green,
+                                          // );
+                                          // Navigator.pushAndRemoveUntil(
+                                          //   context,
+                                          //   MaterialPageRoute(
+                                          //     builder: (cntxt) =>
+                                          //         const LoginScreen(),
+                                          //   ),
+                                          //   (route) => false,
+                                          // );
+                                        } else if (value == false) {
+                                          getXSnackbar(
+                                            title: 'Failed!',
+                                            content: 'Wrong PIN!',
+                                            isSuccess: false,
+                                          );
+                                          // showToastMessage('Password reset failed!', Colors.red);
+                                        }
+                                      });
+                                    }
+                                  },
+                        child: Visibility(
+                          visible:
+                              setPassController.passwordResetIsInProgress ==
+                                  false,
+                          replacement: const CircularProgressIndicator(
+                              color: Colors.green),
+                          child: const Text('Confirm'),
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -143,38 +196,5 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> resetPassword() async {
-    isLoading = true;
-    if (mounted) {
-      setState(() {});
-    }
-    Map<String, String> requestBody = {
-      'email': widget.email,
-      'OTP': widget.otp,
-      'password': confirmPasswordController.text,
-    };
-    NetworkResponse responseBody = await NetworkCaller()
-        .postRequest(url: Urls.resetUserPassword, body: requestBody);
-    if (responseBody.body!['status'] == 'success') {
-      showToastMessage(
-          'Password reset successful., Now you can login.', Colors.green);
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (cntxt) => const LoginScreen(),
-          ),
-          (route) => false,
-        );
-      }
-    } else {
-      showToastMessage('Password reset failed!', Colors.red);
-    }
-    isLoading = false;
-    if (mounted) {
-      setState(() {});
-    }
   }
 }

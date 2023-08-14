@@ -104,7 +104,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                                     // );
                                     Get.to(() => SetPasswordScreen(
                                           email: widget.email,
-                                          otp: pinController.text.trim(),
+                                          pin: pinController.text.trim(),
                                         ));
                                   } else if (value == false) {
                                     getXSnackbar(
