@@ -245,6 +245,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                                   content:
                                                       'Registration successfull.',
                                                 );
+
                                                 // showToastMessage(
                                                 //   'Registration success!',
                                                 //   Colors.green,
