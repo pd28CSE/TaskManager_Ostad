@@ -8,7 +8,7 @@ import '../task_screens/bottom_nav_base_screen.dart';
 import './login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  static const String routeName = 'splash-screen/';
+  static const String routeName = '/splash-screen';
   const SplashScreen({super.key});
 
   @override

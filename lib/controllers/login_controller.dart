@@ -33,23 +33,8 @@ class LoginController extends GetxController {
       await AuthUtility.saveUserInfo(authUserModel);
 
       return true;
-      // if (mounted) {
-      //   Navigator.pushAndRemoveUntil(
-      //     context,
-      //     MaterialPageRoute(
-      //       builder: (cntxt) => const BottomNavBaseScreen(),
-      //     ),
-      //     (route) => false,
-      //   );
-      // }
     } else {
       return false;
-      // showToastMessage('Incorrect email or password!', Colors.red);
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(
-      //     content: Text('Incorrect email or password!'),
-      //   ),
-      // );
     }
   }
 }

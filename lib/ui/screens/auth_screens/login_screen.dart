@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../controllers/login_controller.dart';
-import '../../../data/models/auth_utility.dart';
-import '../../../data/models/network_response.dart';
-import '../../../data/models/user_model.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utilitys/urls.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
 import '../task_screens/bottom_nav_base_screen.dart';
@@ -120,16 +115,49 @@ class _LoginScreenState extends State<LoginScreen> {
                                       false) {
                                     return;
                                   } else {
-                                    contrl.userSignIn(
+                                    contrl
+                                        .userSignIn(
                                       email: emailController.text.trim(),
                                       password: passwordController.text,
-                                    );
+                                    )
+                                        .then((value) {
+                                      if (value == true) {
+                                        clearForm();
+                                        Get.offAll(
+                                            () => const BottomNavBaseScreen());
+                                      } else if (value == false) {
+                                        Get.snackbar(
+                                          'Failed!',
+                                          'Incorrect email or password!',
+                                          snackPosition: SnackPosition.BOTTOM,
+                                          colorText: Colors.red,
+                                          backgroundGradient: LinearGradient(
+                                            colors: [
+                                              Colors.red.shade900,
+                                              Colors.green,
+                                            ],
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                          ),
+                                        );
+                                        // showToastMessage(
+                                        //   'Incorrect email or password!',
+                                        //   Colors.red,
+                                        // );
+                                        // ScaffoldMessenger.of(context).showSnackBar(
+                                        //   const SnackBar(
+                                        //     content: Text('Incorrect email or password!'),
+                                        //   ),
+                                        // );
+                                      }
+                                    });
                                   }
                                 },
                           child: Visibility(
                             visible: contrl.signinInProgress == false,
                             replacement: const CircularProgressIndicator(
-                                color: Colors.green),
+                              color: Colors.green,
+                            ),
                             child: const Text('Login'),
                           ),
                         );
@@ -139,13 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Center(
                       child: TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (cntxt) =>
-                                  const EmailVerificationScreen(),
-                            ),
-                          );
+                          Get.to(() => const EmailVerificationScreen());
                         },
                         child: const Text('Forgot Password?'),
                       ),
@@ -159,12 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: EdgeInsets.zero,
                           ),
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (cntxt) => const RegistrationScreen(),
-                              ),
-                            );
+                            Get.to(() => const RegistrationScreen());
                           },
                           child: const Text('Sign Up'),
                         ),
@@ -183,52 +200,5 @@ class _LoginScreenState extends State<LoginScreen> {
   void clearForm() {
     emailController.clear();
     passwordController.clear();
-  }
-
-  Future<void> userSignIn() async {
-    signinInProgress = true;
-    if (mounted == true) {
-      setState(() {});
-    }
-
-    final Map<String, dynamic> requestBody = {
-      'email': emailController.text.trim(),
-      'password': passwordController.text,
-    };
-
-    final NetworkResponse networkResponse = await NetworkCaller().postRequest(
-      url: Urls.login,
-      body: requestBody,
-      isLogin: true,
-    );
-
-    signinInProgress = false;
-    if (mounted == true) {
-      setState(() {});
-    }
-    if (networkResponse.isSuccess == true) {
-      AuthUserModel authUserModel =
-          AuthUserModel.fromJson(networkResponse.body!);
-      await AuthUtility.saveUserInfo(authUserModel);
-      clearForm();
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (cntxt) => const BottomNavBaseScreen(),
-          ),
-          (route) => false,
-        );
-      }
-    } else {
-      if (mounted) {
-        showToastMessage('Incorrect email or password!', Colors.red);
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //     content: Text('Incorrect email or password!'),
-        //   ),
-        // );
-      }
-    }
   }
 }
