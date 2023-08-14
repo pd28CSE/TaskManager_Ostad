@@ -10,9 +10,6 @@ class UserTaskListModel {
       list.add(UserTaskModel.fromJson(item));
     }
 
-    // List<UserTaskModel> listadat =
-    //     json['data'].map((task) => UserTaskModel.fromJson(task)).toList();
-
     return UserTaskListModel(
       status: json['status'],
       usertaskList: list,
