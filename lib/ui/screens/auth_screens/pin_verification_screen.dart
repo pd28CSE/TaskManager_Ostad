@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+
+import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
-import '../../../data/models/network_response.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utilitys/urls.dart';
+import '../../../controllers/pin_verification_controller.dart';
 import '../../../styles/style.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
 import './set_password_screen.dart';
 
 class PinVerificationScreen extends StatefulWidget {
-  static const String routeName = 'pin-verification-screen/';
+  static const String routeName = '/pin-verification-screen';
   final String email;
   const PinVerificationScreen({super.key, required this.email});
 
@@ -21,13 +21,13 @@ class PinVerificationScreen extends StatefulWidget {
 class _PinVerificationScreenState extends State<PinVerificationScreen> {
   late TextEditingController pinController;
   late GlobalKey<FormState> formKey;
-  late bool isLoading;
+  final PinVerificationController pinVerificationController =
+      Get.find<PinVerificationController>();
 
   @override
   void initState() {
     formKey = GlobalKey<FormState>();
     pinController = TextEditingController();
-    isLoading = false;
     super.initState();
   }
 
@@ -75,7 +75,58 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  buildSubmitButton(),
+                  GetBuilder<PinVerificationController>(
+                      builder: (pinVerifyController) {
+                    return ElevatedButton(
+                      onPressed: pinVerifyController
+                                  .pinVerificationInProgress ==
+                              true
+                          ? null
+                          : () {
+                              if (formKey.currentState!.validate() == false) {
+                                return;
+                              } else {
+                                pinVerifyController
+                                    .verifyPIN(
+                                  email: widget.email,
+                                  pin: pinController.text.trim(),
+                                )
+                                    .then((value) {
+                                  if (value == true) {
+                                    formKey.currentState!.reset();
+                                    getXSnackbar(
+                                      title: 'Success.',
+                                      content: 'PIN verification successful.',
+                                    );
+                                    // showToastMessage(
+                                    //   'OTP verification successful.',
+                                    //   Colors.green,
+                                    // );
+                                    Get.to(() => SetPasswordScreen(
+                                          email: widget.email,
+                                          otp: pinController.text.trim(),
+                                        ));
+                                  } else if (value == false) {
+                                    getXSnackbar(
+                                      title: 'Failed!',
+                                      content: 'Wrong PIN!',
+                                      isSuccess: false,
+                                    );
+                                    // showToastMessage('Wrong OTP!', Colors.red);
+                                  }
+                                });
+                              }
+                            },
+                      child: Visibility(
+                        visible:
+                            pinVerifyController.pinVerificationInProgress ==
+                                false,
+                        replacement: const CircularProgressIndicator(
+                            color: Colors.green),
+                        child: const Text('Confirm'),
+                      ),
+                    );
+                  })
                 ],
               ),
             ),
@@ -83,51 +134,5 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
         ),
       ),
     );
-  }
-
-  ElevatedButton buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: isLoading == true
-          ? null
-          : () async {
-              if (formKey.currentState!.validate() == false) {
-                return;
-              } else {
-                await verifyOTP(widget.email, pinController.text.trim());
-              }
-            },
-      child: Visibility(
-        visible: isLoading == false,
-        replacement: const CircularProgressIndicator(color: Colors.green),
-        child: const Text('Confirm'),
-      ),
-    );
-  }
-
-  Future<void> verifyOTP(String email, String otp) async {
-    isLoading = true;
-    if (mounted) {
-      setState(() {});
-    }
-    NetworkResponse responseBody =
-        await NetworkCaller().getRequest(Urls.otpVerification(email, otp));
-    if (responseBody.body!['status'] == 'success') {
-      formKey.currentState!.reset();
-      showToastMessage('OTP verification successful.', Colors.green);
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (cntxt) => SetPasswordScreen(email: email, otp: otp),
-          ),
-        );
-      }
-    } else {
-      showToastMessage('Wrong OTP!', Colors.red);
-    }
-    isLoading = false;
-    if (mounted) {
-      setState(() {});
-    }
   }
 }
