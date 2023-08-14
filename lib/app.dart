@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:get/get.dart';
+
 import './ui/screens/auth_screens/splash_screen.dart';
+import './controllers/login_controller.dart';
 
 class TaskManager extends StatefulWidget {
   static GlobalKey<NavigatorState> globalKey = GlobalKey<NavigatorState>();
@@ -13,7 +16,7 @@ class TaskManager extends StatefulWidget {
 class _TaskManagerState extends State<TaskManager> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       navigatorKey: TaskManager.globalKey,
       debugShowCheckedModeBanner: false,
       title: 'Task Manager',
@@ -62,7 +65,18 @@ class _TaskManagerState extends State<TaskManager> {
         brightness: Brightness.dark,
       ),
       themeMode: ThemeMode.light,
-      home: const SplashScreen(),
+      initialBinding: ControllerBinding(),
+      initialRoute: SplashScreen.routeName,
+      getPages: [
+        GetPage(name: SplashScreen.routeName, page: () => const SplashScreen()),
+      ],
     );
+  }
+}
+
+class ControllerBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.put<LoginController>(LoginController());
   }
 }

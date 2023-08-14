@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../../../controllers/login_controller.dart';
 import '../../../data/models/auth_utility.dart';
 import '../../../data/models/network_response.dart';
 import '../../../data/models/user_model.dart';
@@ -24,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
   late bool isPasswordHidden;
-  late bool signinInProgress;
+  final LoginController loginController = Get.find<LoginController>();
 
   @override
   void initState() {
@@ -32,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
     isPasswordHidden = true;
-    signinInProgress = false;
     super.initState();
   }
 
@@ -109,7 +110,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     const SizedBox(height: 20.0),
-                    buildSubmitButton(),
+                    GetBuilder<LoginController>(
+                      builder: (contrl) {
+                        return ElevatedButton(
+                          onPressed: contrl.signinInProgress == true
+                              ? null
+                              : () {
+                                  if (formKey.currentState!.validate() ==
+                                      false) {
+                                    return;
+                                  } else {
+                                    contrl.userSignIn(
+                                      email: emailController.text.trim(),
+                                      password: passwordController.text,
+                                    );
+                                  }
+                                },
+                          child: Visibility(
+                            visible: contrl.signinInProgress == false,
+                            replacement: const CircularProgressIndicator(
+                                color: Colors.green),
+                            child: const Text('Login'),
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 16.0),
                     Center(
                       child: TextButton(
@@ -151,25 +176,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  ElevatedButton buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: signinInProgress == true
-          ? null
-          : () {
-              if (formKey.currentState!.validate() == false) {
-                return;
-              } else {
-                userSignIn();
-              }
-            },
-      child: Visibility(
-        visible: signinInProgress == false,
-        replacement: const CircularProgressIndicator(color: Colors.green),
-        child: const Text('Login'),
       ),
     );
   }

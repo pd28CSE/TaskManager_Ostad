@@ -27,24 +27,6 @@ PinTheme appOTPStyle() {
   );
 }
 
-TextStyle head7Text(Color textColor) {
-  return TextStyle(
-    color: textColor,
-    fontSize: 13,
-    fontFamily: 'Poppins',
-    fontWeight: FontWeight.w400,
-  );
-}
-
-TextStyle head9Text(Color textColor) {
-  return TextStyle(
-    color: textColor,
-    fontSize: 9,
-    fontFamily: 'Poppins',
-    fontWeight: FontWeight.w500,
-  );
-}
-
 DecoratedBox appDropDownStyle(Widget child) {
   return DecoratedBox(
     decoration: BoxDecoration(
