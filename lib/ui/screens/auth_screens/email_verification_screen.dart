@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../../../data/models/network_response.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utilitys/urls.dart';
+import '../../../controllers/ermail_verification_controller.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
 import './pin_verification_screen.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
-  static const String routeName = 'email-verification-screen/';
+  static const String routeName = '/email-verification-screen';
   const EmailVerificationScreen({super.key});
 
   @override
@@ -19,13 +18,14 @@ class EmailVerificationScreen extends StatefulWidget {
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   late TextEditingController emailController;
   late GlobalKey<FormState> formKey;
-  late bool isLoading;
+
+  final EmailVerificationController emailVerificationController =
+      Get.find<EmailVerificationController>();
 
   @override
   void initState() {
     formKey = GlobalKey<FormState>();
     emailController = TextEditingController();
-    isLoading = false;
     super.initState();
   }
 
@@ -79,7 +79,56 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  buildSubmitButton(),
+                  GetBuilder<EmailVerificationController>(
+                      builder: (emailVerifyController) {
+                    return ElevatedButton(
+                      onPressed: emailVerifyController.emailVerifyInProgress ==
+                              true
+                          ? null
+                          : () {
+                              if (formKey.currentState!.validate() == false) {
+                                return;
+                              } else {
+                                emailVerifyController
+                                    .verifyUserEmail(
+                                        emailController.text.trim())
+                                    .then((value) {
+                                  if (value == true) {
+                                    getXSnackbar(
+                                      title: 'Attention!',
+                                      content:
+                                          '6 digit verification pin is send.',
+                                    );
+                                    Get.to(() => PinVerificationScreen(
+                                        email: emailController.text.trim()));
+
+                                    // showToastMessage(
+                                    //   '6 digit verification pin is send.',
+                                    //   Colors.green,
+                                    // );
+                                  } else if (value == false) {
+                                    getXSnackbar(
+                                      title: 'Attention!',
+                                      content: 'Enter valid email!',
+                                      isSuccess: false,
+                                    );
+                                    // showToastMessage(
+                                    //   'Enter valid email!',
+                                    //   Colors.red,
+                                    // );
+                                  }
+                                });
+                              }
+                            },
+                      child: Visibility(
+                        visible: emailVerifyController.emailVerifyInProgress ==
+                            false,
+                        replacement: const CircularProgressIndicator(
+                            color: Colors.green),
+                        child: const Text('Next'),
+                      ),
+                    );
+                  })
                 ],
               ),
             ),
@@ -87,51 +136,5 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         ),
       ),
     );
-  }
-
-  ElevatedButton buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: isLoading == true
-          ? null
-          : () async {
-              if (formKey.currentState!.validate() == false) {
-                return;
-              } else {
-                await verifyUserEmail(emailController.text.trim());
-              }
-            },
-      child: Visibility(
-        visible: isLoading == false,
-        replacement: const CircularProgressIndicator(color: Colors.green),
-        child: const Text('Next'),
-      ),
-    );
-  }
-
-  Future<void> verifyUserEmail(String email) async {
-    isLoading = true;
-    if (mounted) {
-      setState(() {});
-    }
-    NetworkResponse networkResponse =
-        await NetworkCaller().getRequest(Urls.userRecoverVerifyEmail(email));
-    if (networkResponse.body!['status'] == 'success') {
-      formKey.currentState!.reset();
-      showToastMessage('6 digit verification pin is send.', Colors.green);
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (cntxt) => PinVerificationScreen(email: email),
-          ),
-        );
-      }
-    } else {
-      showToastMessage('Enter valid email!', Colors.red);
-    }
-    isLoading = false;
-    if (mounted) {
-      setState(() {});
-    }
   }
 }

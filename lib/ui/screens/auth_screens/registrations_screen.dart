@@ -6,7 +6,7 @@ import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  static const String routeName = 'registration-screen/';
+  static const String routeName = '/registration-screen';
   const RegistrationScreen({super.key});
 
   @override
