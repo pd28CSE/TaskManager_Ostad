@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../../../data/models/network_response.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utilitys/urls.dart';
+import '../../../controllers/registration_controller.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
 
@@ -24,7 +23,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   late final TextEditingController confirmPasswordController;
   late bool isPasswordHidden;
   late bool isConfirmPasswordHidden;
-  late bool signUpInProgress;
+  final RegistrationController registrationController =
+      Get.find<RegistrationController>();
 
   @override
   void initState() {
@@ -37,7 +37,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     confirmPasswordController = TextEditingController();
     isPasswordHidden = true;
     isConfirmPasswordHidden = true;
-    signUpInProgress = false;
     super.initState();
   }
 
@@ -120,6 +119,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               validator: (value) {
                                 if (value?.isEmpty ?? true) {
                                   return 'Enter your email';
+                                } else if (RegExp(
+                                            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                        .hasMatch(value!.trim()) ==
+                                    false) {
+                                  return 'Enter a valid email.';
                                 }
                                 return null;
                               },
@@ -158,6 +162,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   ),
                                 ),
                               ),
+                              maxLength: 20,
                               keyboardType: TextInputType.text,
                               textInputAction: TextInputAction.next,
                               obscureText: isPasswordHidden,
@@ -191,6 +196,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   ),
                                 ),
                               ),
+                              maxLength: 20,
                               keyboardType: TextInputType.text,
                               textInputAction: TextInputAction.done,
                               obscureText: isConfirmPasswordHidden,
@@ -206,7 +212,75 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               },
                             ),
                             const SizedBox(height: 20),
-                            buildSubmitButton(),
+                            GetBuilder<RegistrationController>(
+                              builder: (regController) {
+                                return ElevatedButton(
+                                  onPressed: regController.signUpInProgress ==
+                                          true
+                                      ? null
+                                      : () {
+                                          if (formKey.currentState!
+                                                  .validate() ==
+                                              false) {
+                                            return;
+                                          } else {
+                                            regController
+                                                .userSignUp(
+                                              firstName: firstNameController
+                                                  .text
+                                                  .trim(),
+                                              lastName: lastNameController.text
+                                                  .trim(),
+                                              email:
+                                                  emailController.text.trim(),
+                                              phoneNo:
+                                                  phoneController.text.trim(),
+                                              password: passwordController.text,
+                                            )
+                                                .then((value) {
+                                              if (value == true) {
+                                                formKey.currentState!.reset();
+                                                getXSnackbar(
+                                                  title: 'Sucess.',
+                                                  content:
+                                                      'Registration successfull.',
+                                                );
+                                                // showToastMessage(
+                                                //   'Registration success!',
+                                                //   Colors.green,
+                                                // );
+                                                // ScaffoldMessenger.of(context).showSnackBar(
+                                                //   const SnackBar(
+                                                //     content: Text('Registration success!'),
+                                                //   ),
+                                                // );
+                                              } else if (value == false) {
+                                                getXSnackbar(
+                                                  title: 'Failed!',
+                                                  content:
+                                                      'Registration failed!',
+                                                  isSuccess: false,
+                                                );
+                                                // showToastMessage(
+                                                //   'Registration failed!',
+                                                //   Colors.red,
+                                                // );
+                                              }
+                                            });
+                                          }
+                                        },
+                                  child: Visibility(
+                                    visible:
+                                        regController.signUpInProgress == false,
+                                    replacement:
+                                        const CircularProgressIndicator(
+                                      color: Colors.green,
+                                    ),
+                                    child: const Text('Registration'),
+                                  ),
+                                );
+                              },
+                            ),
                             const SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -217,7 +291,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     padding: EdgeInsets.zero,
                                   ),
                                   onPressed: () {
-                                    Navigator.pop(context);
+                                    Get.back();
                                   },
                                   child: const Text('Sign In'),
                                 ),
@@ -235,70 +309,5 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
       ),
     );
-  }
-
-  ElevatedButton buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: signUpInProgress == true
-          ? null
-          : () {
-              if (formKey.currentState!.validate() == false) {
-                return;
-              } else {
-                userSignUp();
-              }
-            },
-      child: Visibility(
-        visible: signUpInProgress == false,
-        replacement: const CircularProgressIndicator(
-          color: Colors.green,
-        ),
-        child: const Text('Registration'),
-      ),
-    );
-  }
-
-  void clearForm() {
-    firstNameController.clear();
-    lastNameController.clear();
-    emailController.clear();
-    phoneController.clear();
-    passwordController.clear();
-    confirmPasswordController.clear();
-  }
-
-  Future<void> userSignUp() async {
-    if (mounted) {
-      signUpInProgress = true;
-      setState(() {});
-    }
-
-    final Map<String, dynamic> body = {
-      'firstName': firstNameController.text.trim(),
-      'lastName': lastNameController.text.trim(),
-      'email': emailController.text.trim(),
-      'mobile': phoneController.text.trim(),
-      'password': passwordController.text,
-      'photo': '',
-    };
-    final NetworkResponse networkResponse =
-        await NetworkCaller().postRequest(url: Urls.registration, body: body);
-    clearForm();
-    if (mounted) {
-      signUpInProgress = false;
-      setState(() {});
-    }
-    if (networkResponse.isSuccess == true) {
-      showToastMessage('Registration success!', Colors.green);
-      // if (mounted) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(
-      //       content: Text('Registration success!'),
-      //     ),
-      //   );
-      // }
-    } else {
-      showToastMessage('Registration failed!', Colors.red);
-    }
   }
 }

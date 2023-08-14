@@ -126,19 +126,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                         Get.offAll(
                                             () => const BottomNavBaseScreen());
                                       } else if (value == false) {
-                                        Get.snackbar(
-                                          'Failed!',
-                                          'Incorrect email or password!',
-                                          snackPosition: SnackPosition.BOTTOM,
-                                          colorText: Colors.red,
-                                          backgroundGradient: LinearGradient(
-                                            colors: [
-                                              Colors.red.shade900,
-                                              Colors.green,
-                                            ],
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                          ),
+                                        getXSnackbar(
+                                          title: 'Failed!',
+                                          content:
+                                              'Incorrect email or password!',
+                                          isSuccess: false,
                                         );
                                         // showToastMessage(
                                         //   'Incorrect email or password!',

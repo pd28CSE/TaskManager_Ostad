@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import './ui/screens/auth_screens/splash_screen.dart';
 import './controllers/login_controller.dart';
+import './controllers/registration_controller.dart';
 
 class TaskManager extends StatefulWidget {
   static GlobalKey<NavigatorState> globalKey = GlobalKey<NavigatorState>();
@@ -78,5 +79,6 @@ class ControllerBinding extends Bindings {
   @override
   void dependencies() {
     Get.put<LoginController>(LoginController());
+    Get.put<RegistrationController>(RegistrationController());
   }
 }
