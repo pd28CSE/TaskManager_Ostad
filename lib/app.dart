@@ -10,6 +10,7 @@ import './controllers/pin_verification_controller.dart';
 import './controllers/set_password_controller.dart';
 import './controllers/new_task_list_controller.dart';
 import './controllers/add_new_task_controller.dart';
+import 'controllers/progress_task_list_controller.dart';
 
 class TaskManager extends StatefulWidget {
   static GlobalKey<NavigatorState> globalKey = GlobalKey<NavigatorState>();
@@ -90,5 +91,6 @@ class ControllerBinding extends Bindings {
     Get.put<SetPasswordController>(SetPasswordController());
     Get.put<NewTaskListController>(NewTaskListController());
     Get.put<AddNewTaskScreenController>(AddNewTaskScreenController());
+    Get.put<ProgressTaskListController>(ProgressTaskListController());
   }
 }

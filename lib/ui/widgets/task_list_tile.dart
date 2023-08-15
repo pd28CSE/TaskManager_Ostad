@@ -211,7 +211,7 @@ class TaskListTile extends StatelessWidget {
                         } else {
                           getXSnackbar(
                             title: 'Success.',
-                            content: 'Task deleted successfully.',
+                            content: 'Task Update successfully.',
                           );
                         }
                       });
