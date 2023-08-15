@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart' as gx;
 import 'package:http/http.dart';
 
 import '../../app.dart';
@@ -88,12 +89,13 @@ class NetworkCaller {
 
   Future<void> goToLoginScreen() async {
     await AuthUtility.clearUserInfo();
-    Navigator.pushAndRemoveUntil(
-      TaskManager.globalKey.currentContext!,
-      MaterialPageRoute(builder: (cntxt) {
-        return const LoginScreen();
-      }),
-      (route) => false,
-    );
+    gx.Get.offAll(() => const LoginScreen());
+    // Navigator.pushAndRemoveUntil(
+    //   TaskManager.globalKey.currentContext!,
+    //   MaterialPageRoute(builder: (cntxt) {
+    //     return const LoginScreen();
+    //   }),
+    //   (route) => false,
+    // );
   }
 }
