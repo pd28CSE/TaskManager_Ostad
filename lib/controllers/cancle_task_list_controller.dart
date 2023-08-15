@@ -5,9 +5,9 @@ import '../data/models/user_task_model.dart';
 import '../data/services/network_caller.dart';
 import '../data/utilitys/urls.dart';
 
-class ProgressTaskListController extends GetxController {
+class CancleTaskListController extends GetxController {
   bool _isDataFetchingInProgress = false;
-  List<UserTaskModel> progressTaskList = [];
+  List<UserTaskModel> cancleTaskList = [];
 
   bool get isDataFetchingInProgress => _isDataFetchingInProgress;
 
@@ -15,13 +15,14 @@ class ProgressTaskListController extends GetxController {
     _isDataFetchingInProgress = true;
     update();
     NetworkResponse networkResponse =
-        await NetworkCaller().getRequest(Urls.taskListByProgress);
+        await NetworkCaller().getRequest(Urls.taskListByCancle);
     _isDataFetchingInProgress = false;
     update();
+
     if (networkResponse.isSuccess == true) {
       UserTaskListModel userTaskListModel =
           UserTaskListModel.fromJson(networkResponse.body!);
-      progressTaskList = userTaskListModel.usertaskList;
+      cancleTaskList = userTaskListModel.usertaskList;
       update();
       return true;
     } else if (networkResponse.isSuccess == false &&
@@ -39,8 +40,9 @@ class ProgressTaskListController extends GetxController {
         await NetworkCaller().getRequest(Urls.taskDeleteById(taskId));
     _isDataFetchingInProgress = false;
     update();
+
     if (networkResponse.isSuccess == true) {
-      progressTaskList.removeWhere((task) => task.id == taskId);
+      cancleTaskList.removeWhere((task) => task.id == taskId);
       update();
       return true;
     } else if (networkResponse.isSuccess == false &&
@@ -60,8 +62,7 @@ class ProgressTaskListController extends GetxController {
     update();
 
     if (networkResponse.isSuccess == true) {
-      progressTaskList.removeWhere((task) => task.id == taskId);
-      update();
+      cancleTaskList.removeWhere((task) => task.id == taskId);
       return true;
     } else if (networkResponse.isSuccess == false &&
         networkResponse.statusCode != -1) {
