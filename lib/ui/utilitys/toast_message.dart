@@ -18,6 +18,8 @@ void getXSnackbar({
   required String title,
   required String content,
   bool isSuccess = true,
+  Color backgroundColor = Colors.deepPurple,
+  SnackPosition snackBarPosition = SnackPosition.BOTTOM,
 }) {
   final Color color = isSuccess == true ? Colors.green : Colors.red;
   final LinearGradient linearGradient = LinearGradient(
@@ -32,7 +34,8 @@ void getXSnackbar({
   Get.snackbar(
     title,
     content,
-    snackPosition: SnackPosition.BOTTOM,
+    backgroundColor: backgroundColor,
+    snackPosition: snackBarPosition,
     colorText: color,
     backgroundGradient: linearGradient,
   );

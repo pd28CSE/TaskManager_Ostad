@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/network_response.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utilitys/urls.dart';
+import 'package:get/get.dart';
+
+import '../../../controllers/add_new_task_controller.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
 import '../../widgets/user_profile_banner.dart';
@@ -18,14 +18,14 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   late final GlobalKey<FormState> formKey;
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
-  late bool taskSavingInProgress;
+  final AddNewTaskScreenController addNewTaskScreenController =
+      Get.find<AddNewTaskScreenController>();
 
   @override
   void initState() {
     formKey = GlobalKey<FormState>();
     titleController = TextEditingController();
     descriptionController = TextEditingController();
-    taskSavingInProgress = false;
     super.initState();
   }
 
@@ -90,7 +90,58 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      buildSubmitButton(),
+                      GetBuilder<AddNewTaskScreenController>(
+                          builder: (addTaskScreenController) {
+                        return ElevatedButton(
+                          onPressed: addTaskScreenController
+                                      .isTaskSavingInProgress ==
+                                  true
+                              ? null
+                              : () {
+                                  if (formKey.currentState!.validate() ==
+                                      false) {
+                                    return;
+                                  } else {
+                                    addTaskScreenController
+                                        .saveTask(
+                                      taskTitle: titleController.text.trim(),
+                                      taskDescription:
+                                          descriptionController.text.trim(),
+                                    )
+                                        .then((value) {
+                                      if (value == null) {
+                                        getXSnackbar(
+                                          title: 'New task add Error!',
+                                          content: 'Some thing is wrong.',
+                                          isSuccess: false,
+                                        );
+                                      } else if (value == false) {
+                                        getXSnackbar(
+                                          title: 'Failed!',
+                                          content: 'Task add failed!',
+                                          isSuccess: false,
+                                        );
+                                      } else {
+                                        formKey.currentState!.reset();
+                                        getXSnackbar(
+                                          title: 'Success!',
+                                          content: 'Task added successfully.',
+                                          snackBarPosition: SnackPosition.TOP,
+                                        );
+                                      }
+                                    });
+                                  }
+                                },
+                          child: Visibility(
+                            visible: addTaskScreenController
+                                    .isTaskSavingInProgress ==
+                                false,
+                            replacement: const CircularProgressIndicator(
+                                color: Colors.green),
+                            child: const Text('Save'),
+                          ),
+                        );
+                      })
                     ],
                   ),
                 ),
@@ -100,58 +151,5 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
         ),
       ),
     );
-  }
-
-  ElevatedButton buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: taskSavingInProgress == true
-          ? null
-          : () {
-              if (formKey.currentState!.validate() == false) {
-                return;
-              } else {
-                saveTask();
-              }
-            },
-      child: Visibility(
-        visible: taskSavingInProgress == false,
-        replacement: const CircularProgressIndicator(color: Colors.green),
-        child: const Text('Save'),
-      ),
-    );
-  }
-
-  Future<void> saveTask() async {
-    taskSavingInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-
-    Map<String, dynamic> requestBody = {
-      'title': titleController.text.trim(),
-      'description': descriptionController.text.trim(),
-      'status': 'New',
-    };
-
-    final NetworkResponse networkResponse = await NetworkCaller().postRequest(
-      url: Urls.createTask,
-      body: requestBody,
-    );
-
-    taskSavingInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (networkResponse.isSuccess) {
-      clearForm();
-      showToastMessage('Task added successfully.', Colors.green);
-    } else {
-      showToastMessage('Task add failed!', Colors.red);
-    }
-  }
-
-  void clearForm() {
-    titleController.clear();
-    descriptionController.clear();
   }
 }
