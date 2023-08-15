@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../controllers/auth_utility.dart';
 import '../../../controllers/login_controller.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
@@ -23,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   late final TextEditingController passwordController;
   late bool isPasswordHidden;
   final LoginController loginController = Get.find<LoginController>();
-  final AuthUtility authUtilityController = Get.find<AuthUtility>();
 
   @override
   void initState() {
