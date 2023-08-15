@@ -48,7 +48,7 @@ class _CompletedTaskListScreenState extends State<CompletedTaskListScreen> {
       body: ScreenBackground(
         child: Column(
           children: <Widget>[
-            const UserProfileBanner(),
+            UserProfileBanner(),
             const SizedBox(height: 10),
             Expanded(
               child: GetBuilder<CompletedTaskListController>(

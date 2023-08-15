@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../controllers/auth_utility.dart';
 import '../../../controllers/login_controller.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
@@ -22,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final TextEditingController passwordController;
   late bool isPasswordHidden;
   final LoginController loginController = Get.find<LoginController>();
+  final AuthUtility authUtilityController = Get.find<AuthUtility>();
 
   @override
   void initState() {
@@ -122,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     )
                                         .then((value) {
                                       if (value == true) {
-                                        clearForm();
+                                        formKey.currentState!.reset();
                                         Get.offAll(
                                             () => const BottomNavBaseScreen());
                                       } else if (value == false) {
@@ -187,10 +189,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  void clearForm() {
-    emailController.clear();
-    passwordController.clear();
   }
 }

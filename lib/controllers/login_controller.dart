@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../data/models/auth_utility.dart';
+import 'auth_utility.dart';
 import '../data/models/network_response.dart';
 import '../data/models/user_model.dart';
 import '../data/services/network_caller.dart';
@@ -24,14 +24,13 @@ class LoginController extends GetxController {
       body: requestBody,
       isLogin: true,
     );
-
     _signinInProgress = false;
     update();
+
     if (networkResponse.isSuccess == true) {
       AuthUserModel authUserModel =
           AuthUserModel.fromJson(networkResponse.body!);
       await AuthUtility.saveUserInfo(authUserModel);
-
       return true;
     } else {
       return false;

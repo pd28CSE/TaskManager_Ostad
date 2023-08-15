@@ -13,6 +13,8 @@ import './controllers/add_new_task_controller.dart';
 import './controllers/cancle_task_list_controller.dart';
 import './controllers/completed_task_list_controller.dart';
 import './controllers/progress_task_list_controller.dart';
+import './controllers/auth_utility.dart';
+import './controllers/profile_update_controller.dart';
 
 class TaskManager extends StatefulWidget {
   static GlobalKey<NavigatorState> globalKey = GlobalKey<NavigatorState>();
@@ -96,5 +98,7 @@ class ControllerBinding extends Bindings {
     Get.put<ProgressTaskListController>(ProgressTaskListController());
     Get.put<CancleTaskListController>(CancleTaskListController());
     Get.put<CompletedTaskListController>(CompletedTaskListController());
+    Get.put<AuthUtility>(AuthUtility());
+    Get.put<ProfileUpdateController>(ProfileUpdateController());
   }
 }

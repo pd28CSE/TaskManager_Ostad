@@ -4,14 +4,13 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'package:image_picker/image_picker.dart';
 
-import '../../../data/models/auth_utility.dart';
-import '../../../data/models/network_response.dart';
+import '../../../controllers/auth_utility.dart';
+import '../../../controllers/profile_update_controller.dart';
 import '../../../data/models/user_model.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utilitys/urls.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
 import '../../widgets/user_profile_banner.dart';
@@ -26,7 +25,6 @@ class ProfileUpdateScreen extends StatefulWidget {
 
 class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
   late AuthUserModel auth;
-  late bool isUpdateInProgress;
   late bool isPasswordHidden;
   late bool isConfirmPasswordHidden;
   late GlobalKey<FormState> formKey;
@@ -37,11 +35,13 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
   late Uint8List imageBytes;
+  final AuthUtility authUtilityController = Get.find<AuthUtility>();
+  final ProfileUpdateController profileUpdateController =
+      Get.find<ProfileUpdateController>();
 
   @override
   void initState() {
     auth = AuthUtility.userModel;
-    isUpdateInProgress = false;
     isPasswordHidden = true;
     isConfirmPasswordHidden = true;
     formKey = GlobalKey<FormState>();
@@ -60,11 +60,8 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
       body: ScreenBackground(
         child: Column(
           children: <Widget>[
-            const Material(
-              elevation: 8,
-              child: UserProfileBanner(
-                isInProfileUpdateScreen: true,
-              ),
+            UserProfileBanner(
+              isInProfileUpdateScreen: true,
             ),
             Expanded(
               child: Padding(
@@ -105,7 +102,7 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
                                 ),
                               ),
                               onPressed: () async {
-                                await pickImageFromGallery();
+                                await pickProfilePicture();
                               },
                               child: const Text('Image'),
                             ),
@@ -120,9 +117,9 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
                         const SizedBox(height: 20),
                         TextFormField(
                           initialValue: auth.data!.email,
-                          // decoration: const InputDecoration(
-                          //   labelText: 'Email',
-                          // ),
+                          decoration: const InputDecoration(
+                            labelText: 'E-mail',
+                          ),
                           readOnly: true,
                         ),
                         const SizedBox(height: 20),
@@ -237,7 +234,79 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
                           },
                         ),
                         const SizedBox(height: 20),
-                        buildSubmitButton(),
+                        GetBuilder<ProfileUpdateController>(
+                          builder: (profileUpdateController) {
+                            return ElevatedButton(
+                              onPressed: profileUpdateController
+                                          .isUpdateInProgress ==
+                                      true
+                                  ? null
+                                  : () {
+                                      if (formKey.currentState!.validate() ==
+                                          false) {
+                                        return;
+                                      } else {
+                                        profileUpdateController
+                                            .updateUserInfo(
+                                          firstName:
+                                              firstNameController.text.trim(),
+                                          lastName:
+                                              lastNameController.text.trim(),
+                                          email: auth.data!.email!,
+                                          phoneNo:
+                                              phoneNumberController.text.trim(),
+                                          image: imagePathController
+                                                  .text.isNotEmpty
+                                              ? base64Encode(imageBytes)
+                                              : auth.data!.photo!,
+                                          password: passwordController.text,
+                                        )
+                                            .then((value) {
+                                          if (value == null) {
+                                            getXSnackbar(
+                                              title: 'Error!',
+                                              content: 'Some thing is wrong',
+                                              isSuccess: false,
+                                            );
+                                          } else if (value == false) {
+                                            getXSnackbar(
+                                              title: 'Failed!',
+                                              content: 'Profile update failed.',
+                                              isSuccess: false,
+                                            );
+                                          } else {
+                                            auth.data!.firstName =
+                                                firstNameController.text;
+                                            auth.data!.lastName =
+                                                lastNameController.text;
+                                            auth.data!.mobile =
+                                                phoneNumberController.text;
+                                            auth.data!.photo =
+                                                imagePathController.text.isEmpty
+                                                    ? auth.data!.photo
+                                                    : base64Encode(imageBytes);
+                                            authUtilityController
+                                                .updateUserInfo(auth.data!);
+                                            getXSnackbar(
+                                              title: 'Success!',
+                                              content:
+                                                  'Profile update successfull.',
+                                            );
+                                          }
+                                        });
+                                      }
+                                    },
+                              child: Visibility(
+                                visible: profileUpdateController
+                                        .isUpdateInProgress ==
+                                    false,
+                                replacement: const CircularProgressIndicator(
+                                    color: Colors.green),
+                                child: const Text('Update'),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -282,7 +351,7 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
     );
   }
 
-  Future<void> pickImageFromGallery() async {
+  Future<void> pickProfilePicture() async {
     try {
       ImageSource? imageSource = await storageSelection();
       if (imageSource == null) {
@@ -296,67 +365,6 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
       }
     } catch (e) {
       log(e.toString());
-    }
-  }
-
-  ElevatedButton buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: isUpdateInProgress == true
-          ? null
-          : () async {
-              if (formKey.currentState!.validate() == false) {
-                return;
-              } else {
-                await updateUserInfo();
-              }
-            },
-      child: Visibility(
-        visible: isUpdateInProgress == false,
-        replacement: const CircularProgressIndicator(color: Colors.green),
-        child: const Text('Update'),
-      ),
-    );
-  }
-
-  Future<void> updateUserInfo() async {
-    isUpdateInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-
-    Map<String, String> requestBody = {
-      "email": auth.data!.email!,
-      "firstName": firstNameController.text.trim(),
-      "lastName": lastNameController.text.trim(),
-      "mobile": phoneNumberController.text.trim(),
-    };
-    if (passwordController.text.isNotEmpty) {
-      requestBody["password"] = passwordController.text;
-    }
-    if (imagePathController.text.isNotEmpty) {
-      requestBody["photo"] = base64Encode(imageBytes);
-    }
-    NetworkResponse networkResponse = await NetworkCaller().postRequest(
-      url: Urls.updateUserPprofile,
-      body: requestBody,
-    );
-
-    if (networkResponse.isSuccess == true) {
-      showToastMessage('Profile Update Successfull.', Colors.green);
-      auth.data!.firstName = firstNameController.text;
-      auth.data!.lastName = lastNameController.text;
-      auth.data!.mobile = phoneNumberController.text;
-      auth.data!.photo = imagePathController.text.isEmpty
-          ? auth.data!.photo
-          : base64Encode(imageBytes);
-      await AuthUtility.updateUserInfo(auth.data!);
-    } else {
-      showToastMessage('Profile Update failed!', Colors.red);
-    }
-
-    isUpdateInProgress = false;
-    if (mounted) {
-      setState(() {});
     }
   }
 }

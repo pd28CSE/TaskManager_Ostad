@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 import '../../app.dart';
+import '../../controllers/auth_utility.dart';
 import '../../ui/screens/auth_screens/login_screen.dart';
-import '../models/auth_utility.dart';
 import '../models/network_response.dart';
 
 class NetworkCaller {

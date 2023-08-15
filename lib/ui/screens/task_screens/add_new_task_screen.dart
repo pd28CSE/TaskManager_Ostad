@@ -43,12 +43,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                ),
-                child: UserProfileBanner(),
-              ),
+              UserProfileBanner(),
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 17, vertical: 25),

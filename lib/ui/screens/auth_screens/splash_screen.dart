@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../../data/models/auth_utility.dart';
+import '../../../controllers/auth_utility.dart';
 import '../../utilitys/assets_utils.dart';
 import '../../widgets/screen_background.dart';
 import '../task_screens/bottom_nav_base_screen.dart';
@@ -18,6 +18,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final AuthUtility authUtilityController = Get.find<AuthUtility>();
+
   @override
   void initState() {
     navigateToLoginScreen();
@@ -25,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> navigateToLoginScreen() async {
-    bool isLogedIn = await AuthUtility.isUserLoggedIn();
+    bool isLogedIn = await authUtilityController.isUserLoggedIn();
 
     Future.delayed(const Duration(seconds: 3)).then(
       (value) {

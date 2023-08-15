@@ -66,7 +66,7 @@ class _NewTaskListScreenState extends State<NewTaskListScreen> {
       body: ScreenBackground(
         child: Column(
           children: <Widget>[
-            const UserProfileBanner(),
+            UserProfileBanner(),
             const SizedBox(height: 10),
             GetBuilder<NewTaskListController>(
               builder: (taskListStatus) {

@@ -44,7 +44,7 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          const UserProfileBanner(),
+          UserProfileBanner(),
           const SizedBox(height: 10),
           Expanded(
             child: GetBuilder<ProgressTaskListController>(
