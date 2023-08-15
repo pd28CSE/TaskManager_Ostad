@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/network_response.dart';
-import '../../../data/models/task_status_count.dart';
-import '../../../data/models/user_task_model.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utilitys/urls.dart';
+import 'package:get/get.dart';
+
+import '../../../controllers/new_task_list_controller.dart';
 import '../../utilitys/toast_message.dart';
 import '../../widgets/screen_background.dart';
 import '../../widgets/summary_card.dart';
@@ -13,6 +11,7 @@ import '../../widgets/user_profile_banner.dart';
 import './add_new_task_screen.dart';
 
 class NewTaskListScreen extends StatefulWidget {
+  static const String routeName = '/new-task-list-screen';
   final void Function(int) onChangeScreen;
   const NewTaskListScreen({super.key, required this.onChangeScreen});
 
@@ -21,34 +20,44 @@ class NewTaskListScreen extends StatefulWidget {
 }
 
 class _NewTaskListScreenState extends State<NewTaskListScreen> {
-  late bool isTaskDataFetchingInProgress;
-  late bool isTaskStatusDataFetchingInProgress;
-  late List<UserTaskModel> newTaskList;
-  late TaskStatusCount taskStatusCount;
-  final Map<String, int> statusCount = {
-    'New': 0,
-    'Progress': 0,
-    'Cancled': 0,
-    'Completed': 0,
-  };
+  final NewTaskListController newTaskListController =
+      Get.find<NewTaskListController>();
 
   @override
   void initState() {
-    isTaskDataFetchingInProgress = true;
-    isTaskStatusDataFetchingInProgress = true;
-    newTaskList = [];
-
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      getUserTask();
-      getTaskListStatus();
+      newTaskListController.getTaskListStatus().then((value) {
+        if (value == null) {
+          getXSnackbar(
+            title: 'Error!',
+            content: 'Some thing is wrong!',
+            isSuccess: false,
+          );
+        } else if (value == false) {
+          getXSnackbar(
+            title: 'Failed!',
+            content: 'Summary data get failed!',
+            isSuccess: false,
+          );
+        }
+      });
+      newTaskListController.getNewTaskList().then((value) {
+        if (value == null) {
+          getXSnackbar(
+            title: 'Error!',
+            content: 'Some thing is wrong!',
+            isSuccess: false,
+          );
+        } else if (value == false) {
+          getXSnackbar(
+            title: 'Failed!',
+            content: 'New task list get failed!',
+            isSuccess: false,
+          );
+        }
+      });
     });
-  }
-
-  @override
-  void dispose() {
-    newTaskList.clear();
-    super.dispose();
   }
 
   @override
@@ -59,182 +68,104 @@ class _NewTaskListScreenState extends State<NewTaskListScreen> {
           children: <Widget>[
             const UserProfileBanner(),
             const SizedBox(height: 10),
-            Visibility(
-              visible: isTaskStatusDataFetchingInProgress == false,
-              replacement: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: LinearProgressIndicator(),
-              ),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        widget.onChangeScreen(0);
-                      },
-                      child: SummaryCard(
-                        title: 'New',
-                        number: statusCount['New']!,
-                      ),
-                    ),
+            GetBuilder<NewTaskListController>(
+              builder: (taskListStatus) {
+                return Visibility(
+                  visible: taskListStatus.isTaskDataFetchingInProgress == false,
+                  replacement: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: LinearProgressIndicator(),
                   ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        widget.onChangeScreen(1);
-                      },
-                      child: SummaryCard(
-                        title: 'In Progress',
-                        number: statusCount['Progress']!,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            widget.onChangeScreen(0);
+                          },
+                          child: SummaryCard(
+                            title: 'New',
+                            number: taskListStatus.statusCount['New']!,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        widget.onChangeScreen(2);
-                      },
-                      child: SummaryCard(
-                        title: 'Cancle',
-                        number: statusCount['Cancled']!,
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            widget.onChangeScreen(1);
+                          },
+                          child: SummaryCard(
+                            title: 'In Progress',
+                            number: taskListStatus.statusCount['Progress']!,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        widget.onChangeScreen(3);
-                      },
-                      child: SummaryCard(
-                        title: 'Completed',
-                        number: statusCount['Completed']!,
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            widget.onChangeScreen(2);
+                          },
+                          child: SummaryCard(
+                            title: 'Cancle',
+                            number: taskListStatus.statusCount['Cancled']!,
+                          ),
+                        ),
                       ),
-                    ),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            widget.onChangeScreen(3);
+                          },
+                          child: SummaryCard(
+                            title: 'Completed',
+                            number: taskListStatus.statusCount['Completed']!,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: getUserTask,
-                child: Visibility(
-                  visible: isTaskDataFetchingInProgress == false,
-                  replacement: const Center(child: CircularProgressIndicator()),
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(10),
-                    itemCount: newTaskList.length,
-                    itemBuilder: (cntxt, index) {
-                      return TaskListTile(
-                        userTask: newTaskList[index],
-                        onDeleteTaskTap: deleteTask,
-                        onUpdateTaskStatusTap: updateTaskByStatus,
-                      );
-                    },
-                    separatorBuilder: (cntxt, index) => const Divider(),
+              child: GetBuilder<NewTaskListController>(
+                  builder: (newTaskController) {
+                return RefreshIndicator(
+                  onRefresh: newTaskController.getNewTaskList,
+                  child: Visibility(
+                    visible:
+                        newTaskController.isTaskDataFetchingInProgress == false,
+                    replacement:
+                        const Center(child: CircularProgressIndicator()),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(10),
+                      itemCount: newTaskController.newTaskList.length,
+                      itemBuilder: (cntxt, index) {
+                        return TaskListTile(
+                          userTask: newTaskController.newTaskList[index],
+                          onDeleteTaskTap: newTaskController.deleteTask,
+                          onUpdateTaskStatusTap:
+                              newTaskController.updateTaskByStatus,
+                        );
+                      },
+                      separatorBuilder: (cntxt, index) => const Divider(),
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (cntxt) => const AddNewTaskScreen()),
-          ).then((value) async {
-            await getTaskListStatus();
-            await getUserTask();
+          Get.to(() => const AddNewTaskScreen())!.then((value) async {
+            await newTaskListController.getTaskListStatus();
+            await newTaskListController.getNewTaskList();
           });
         },
         child: const Icon(Icons.add),
       ),
     );
-  }
-
-  Future<void> getUserTask() async {
-    isTaskDataFetchingInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    NetworkResponse networkResponse =
-        await NetworkCaller().getRequest(Urls.taskListByNew);
-
-    if (networkResponse.isSuccess == true) {
-      UserTaskListModel userTaskListModel =
-          UserTaskListModel.fromJson(networkResponse.body!);
-      newTaskList = userTaskListModel.usertaskList;
-    } else {
-      showToastMessage('get new task data failed!', Colors.red);
-    }
-    isTaskDataFetchingInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> getTaskListStatus() async {
-    isTaskStatusDataFetchingInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    final NetworkResponse networkResponse =
-        await NetworkCaller().getRequest(Urls.taskStatusCount);
-    if (networkResponse.isSuccess == true) {
-      TaskStatusCount responseBody =
-          TaskStatusCount.fromJson(networkResponse.body!);
-      taskStatusCount = responseBody;
-
-      for (var status in taskStatusCount.data!) {
-        statusCount[status.id!] = status.sum!;
-      }
-    } else if (networkResponse.isSuccess == false) {
-      showToastMessage('Summary data get failed!', Colors.red);
-    }
-
-    isTaskStatusDataFetchingInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> deleteTask(String taskId) async {
-    isTaskDataFetchingInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    NetworkResponse networkResponse =
-        await NetworkCaller().getRequest(Urls.taskDeleteById(taskId));
-    if (networkResponse.isSuccess == true) {
-      showToastMessage('Task successfully delete.', Colors.green);
-      newTaskList.removeWhere((task) => task.id == taskId);
-      await getTaskListStatus();
-    } else {
-      showToastMessage('Task delete failed!', Colors.red);
-    }
-
-    isTaskDataFetchingInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> updateTaskByStatus(String taskId, String status) async {
-    isTaskDataFetchingInProgress = true;
-    isTaskStatusDataFetchingInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    final NetworkResponse networkResponse =
-        await NetworkCaller().getRequest(Urls.taskSatusUpdate(taskId, status));
-
-    if (networkResponse.isSuccess == true) {
-      showToastMessage('Update Successful', Colors.green);
-      await getUserTask();
-      await getTaskListStatus();
-    } else {
-      showToastMessage('Update request failed!', Colors.red);
-    }
   }
 }

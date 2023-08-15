@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/user_task_model.dart';
 import '../utilitys/tast_status_option.dart';
+import '../utilitys/toast_message.dart';
 
 class TaskListTile extends StatelessWidget {
   final UserTaskModel userTask;
-  final Future<void> Function(String taskId) onDeleteTaskTap;
-  final Future<void> Function(String taskId, String status)
+  final Future<bool?> Function(String taskId) onDeleteTaskTap;
+  final Future<bool?> Function(String taskId, String status)
       onUpdateTaskStatusTap;
   late TaskStatusList currentStatus;
 
@@ -50,7 +51,26 @@ class TaskListTile extends StatelessWidget {
                 onPressed: () async {
                   isTaskDeleteConfirm(context).then((value) {
                     if (value == true) {
-                      onDeleteTaskTap(userTask.id);
+                      onDeleteTaskTap(userTask.id).then((value) {
+                        if (value == null) {
+                          getXSnackbar(
+                            title: 'Delete Error!',
+                            content: 'Some thing is wrong!',
+                            isSuccess: false,
+                          );
+                        } else if (value == false) {
+                          getXSnackbar(
+                            title: 'Failed!',
+                            content: 'Task delete failed!',
+                            isSuccess: false,
+                          );
+                        } else {
+                          getXSnackbar(
+                            title: 'Success.',
+                            content: 'Task deleted successfully.',
+                          );
+                        }
+                      });
                     }
                   });
                 },
@@ -173,7 +193,28 @@ class TaskListTile extends StatelessWidget {
                     onPressed: () async {
                       Navigator.pop(context);
                       await onUpdateTaskStatusTap(
-                          userTask.id, currentStatus.name);
+                        userTask.id,
+                        currentStatus.name,
+                      ).then((value) {
+                        if (value == null) {
+                          getXSnackbar(
+                            title: 'Status update Error!',
+                            content: 'Some thing is wrong!',
+                            isSuccess: false,
+                          );
+                        } else if (value == false) {
+                          getXSnackbar(
+                            title: 'Failed!',
+                            content: 'Task status update failed!',
+                            isSuccess: false,
+                          );
+                        } else {
+                          getXSnackbar(
+                            title: 'Success.',
+                            content: 'Task deleted successfully.',
+                          );
+                        }
+                      });
                     },
                     child: const Text('Save'),
                   )

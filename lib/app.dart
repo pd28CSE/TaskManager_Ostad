@@ -8,6 +8,7 @@ import './controllers/registration_controller.dart';
 import './controllers/ermail_verification_controller.dart';
 import './controllers/pin_verification_controller.dart';
 import './controllers/set_password_controller.dart';
+import './controllers/new_task_list_controller.dart';
 
 class TaskManager extends StatefulWidget {
   static GlobalKey<NavigatorState> globalKey = GlobalKey<NavigatorState>();
@@ -86,5 +87,6 @@ class ControllerBinding extends Bindings {
     Get.put<EmailVerificationController>(EmailVerificationController());
     Get.put<PinVerificationController>(PinVerificationController());
     Get.put<SetPasswordController>(SetPasswordController());
+    Get.put<NewTaskListController>(NewTaskListController());
   }
 }

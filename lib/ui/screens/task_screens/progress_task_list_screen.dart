@@ -84,7 +84,7 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
     }
   }
 
-  Future<void> deleteTask(String taskId) async {
+  Future<bool?> deleteTask(String taskId) async {
     isDataFetchingInProgress = true;
     if (mounted) {
       setState(() {});
@@ -104,7 +104,7 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
     }
   }
 
-  Future<void> updateTaskByStatus(String taskId, String status) async {
+  Future<bool?> updateTaskByStatus(String taskId, String status) async {
     isDataFetchingInProgress = true;
     if (mounted) {
       setState(() {});

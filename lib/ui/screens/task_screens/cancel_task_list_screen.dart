@@ -87,7 +87,7 @@ class _CancleTaskListScreenState extends State<CancleTaskListScreen> {
     }
   }
 
-  Future<void> deleteTask(String taskId) async {
+  Future<bool?> deleteTask(String taskId) async {
     isDataFetchingInProgress = true;
     if (mounted) {
       setState(() {});
@@ -106,7 +106,7 @@ class _CancleTaskListScreenState extends State<CancleTaskListScreen> {
     }
   }
 
-  Future<void> updateTaskByStatus(String taskId, String status) async {
+  Future<bool?> updateTaskByStatus(String taskId, String status) async {
     isDataFetchingInProgress = true;
     if (mounted) {
       setState(() {});
