@@ -49,6 +49,7 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
     firstNameController = TextEditingController(text: auth.data!.firstName);
     lastNameController = TextEditingController(text: auth.data!.lastName);
     phoneNumberController = TextEditingController(text: auth.data!.mobile);
+    profileUpdateController.imageBytesCon = base64Decode(auth.data!.photo!);
     passwordController = TextEditingController();
     confirmPasswordController = TextEditingController();
     super.initState();
@@ -77,41 +78,53 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 20),
-                        if (imagePathController.text.isNotEmpty)
-                          Center(
-                            child: CircleAvatar(
-                              radius: 50,
-                              backgroundImage: MemoryImage(imageBytes),
-                            ),
-                          ),
+                        Center(
+                          child: GetBuilder<ProfileUpdateController>(
+                              builder: (controller) {
+                            if (profileUpdateController
+                                .imageBytesCon!.isNotEmpty) {
+                              return CircleAvatar(
+                                radius: 50,
+                                backgroundImage: MemoryImage(
+                                    profileUpdateController.imageBytesCon!),
+                              );
+                            } else {
+                              return const SizedBox();
+                            }
+                          }),
+                        ),
                         const SizedBox(height: 10),
-                        TextFormField(
-                          controller: imagePathController,
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            helperText: 'Optional',
-                            prefixIcon: TextButton(
-                              style: TextButton.styleFrom(
-                                backgroundColor: Colors.black54,
-                                foregroundColor: Colors.white,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(5.0),
-                                    bottomLeft: Radius.circular(5.0),
+                        GetBuilder<ProfileUpdateController>(
+                          builder: (cntr) {
+                            return TextFormField(
+                              controller: imagePathController,
+                              readOnly: true,
+                              decoration: InputDecoration(
+                                helperText: 'Optional',
+                                prefixIcon: TextButton(
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.black54,
+                                    foregroundColor: Colors.white,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(5.0),
+                                        bottomLeft: Radius.circular(5.0),
+                                      ),
+                                    ),
                                   ),
+                                  onPressed: () async {
+                                    await pickProfilePicture();
+                                  },
+                                  child: const Text('Image'),
                                 ),
                               ),
-                              onPressed: () async {
-                                await pickProfilePicture();
+                              validator: (value) {
+                                if (value?.isEmpty ?? true) {
+                                  return null;
+                                }
+                                return null;
                               },
-                              child: const Text('Image'),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return null;
-                            }
-                            return null;
+                            );
                           },
                         ),
                         const SizedBox(height: 20),
@@ -359,9 +372,10 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
       }
       final XFile? image = await ImagePicker().pickImage(source: imageSource);
       if (image != null) {
-        imagePathController.text = image.name;
         imageBytes = File(image.path).readAsBytesSync();
-        setState(() {});
+        profileUpdateController.imageBytesCon = imageBytes;
+        imagePathController.text = image.name;
+        profileUpdateController.updateUI();
       }
     } catch (e) {
       log(e.toString());

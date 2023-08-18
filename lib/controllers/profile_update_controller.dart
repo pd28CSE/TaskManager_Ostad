@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:get/get.dart';
 
 import '../data/models/network_response.dart';
@@ -7,7 +9,7 @@ import 'auth_utility.dart';
 
 class ProfileUpdateController extends GetxController {
   bool _isUpdateInProgress = false;
-
+  Uint8List? imageBytesCon;
   bool get isUpdateInProgress => _isUpdateInProgress;
   final AuthUtility authUtilityController = Get.find<AuthUtility>();
 
@@ -49,5 +51,9 @@ class ProfileUpdateController extends GetxController {
     } else {
       return null;
     }
+  }
+
+  void updateUI() {
+    update();
   }
 }
