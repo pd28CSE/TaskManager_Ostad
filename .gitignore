@@ -43,4 +43,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-/flutter_sdk
+# flutter-sdk related
+.fvm/flutter_sdk
